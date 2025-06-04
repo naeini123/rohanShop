@@ -82,13 +82,27 @@ function initiateCheckout() {
 }
 
 // Function to complete purchase
+// Function to complete purchase
 function completePurchase() {
-    // Clear the cart
-    cart = {};
-    saveCartToLocalStorage();
-    updateCartCount();
-    // Redirect to the purchase confirmation page
-    window.location.href = 'purchase-confirmation.html';
+  // Calculate the total value of the purchase
+  let totalValue = 0;
+  for (const name in cart) {
+    totalValue += cart[name].price * cart[name].quantity;
+  }
+
+  // Track the Purchase event with required parameters
+  fbq('track', 'Purchase', {
+    value: totalValue,
+    currency: 'USD'
+  });
+
+  // Clear the cart
+  cart = {};
+  saveCartToLocalStorage();
+  updateCartCount();
+
+  // Redirect to the purchase confirmation page
+  window.location.href = 'purchase-confirmation.html';
 }
 
 // Add event listener to the purchase button
