@@ -14,7 +14,7 @@
 // ============================================================
 
 const CAPI_PIXEL_ID     = '867998396058170';
-const CAPI_ACCESS_TOKEN = 'YOUR_CAPI_ACCESS_TOKEN'; // <-- replace this
+const CAPI_ACCESS_TOKEN = 'EAAUqKAlvZC5EBQ790m5KkW34LOPze17BqtoNuZAesUhlJ1zZBXyMWWRQVZANUTYUU3kmde4mo3sM2ym6zAk7oeNiBX8ARkW7KB4M248buptqRSMS54MFMNt7lqvZCDZBGgYrJuOyoZAiyXPMX9e5y7dweiniIN0UadNcs1ZATH9x6RYZCaPwleZBKHcrZCoOtZC6MQZDZD'; // <-- replace this
 const CAPI_API_VERSION  = 'v19.0';
 const CAPI_TEST_EVENT_CODE = 'TEST18652'; // Remove this line when going live
 const CAPI_ENDPOINT     = `https://graph.facebook.com/${CAPI_API_VERSION}/${CAPI_PIXEL_ID}/events?access_token=${CAPI_ACCESS_TOKEN}`;
