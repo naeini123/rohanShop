@@ -27,6 +27,12 @@ src="https://www.facebook.com/tr?id=867998396058170&ev=PageView&noscript=1"
 <script src="capi.js"></script>
 <script>capiTrackPageView();</script>
 <!-- End Direct Conversions API Integration -->
+<script src="https://capi-automation.s3.us-east-2.amazonaws.com/public/client_js/capiParamBuilder/clientParamBuilder.bundle.js"></script>
+<script>
+  (async () => {
+    await clientParamBuilder.processAndCollectAllParams(window.location.href);
+  })();
+</script>
 </head>
 <body>
     <header>
