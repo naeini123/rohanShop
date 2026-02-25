@@ -20,6 +20,11 @@ function addToCart(name, price) {
     updateCartCount();
     showNotification(`Added ${name} to cart!`);
     saveCartToLocalStorage();
+
+    // Fire AddToCart via CAPI + browser pixel (deduplicated)
+    if (typeof capiTrackAddToCart === 'function') {
+        capiTrackAddToCart(name, price);
+    }
 }
 
 // Function to remove an item from the cart
@@ -75,33 +80,58 @@ if (document.getElementById('cart-table')) {
     displayCartTable();
 }
 
+// Function to get the total value of the cart
+function getCartTotal() {
+    let total = 0;
+    for (const name in cart) {
+        total += cart[name].price * cart[name].quantity;
+    }
+    return total;
+}
+
+// Function to build contents array for CAPI
+function getCartContents() {
+    return Object.keys(cart).map(name => ({
+        id: name,
+        quantity: cart[name].quantity
+    }));
+}
+
 // Function to initiate checkout
 function initiateCheckout() {
+    // Fire InitiateCheckout via CAPI + browser pixel (deduplicated)
+    if (typeof capiTrackInitiateCheckout === 'function') {
+        capiTrackInitiateCheckout(getCartTotal(), getCartContents());
+    }
     // Redirect to the checkout page
     window.location.href = 'checkout.html';
 }
 
 // Function to complete purchase
 function completePurchase() {
-  // Clear the cart
-  cart = {};
-  saveCartToLocalStorage();
-  updateCartCount();
+    // Collect cart data before clearing
+    const totalValue = getCartTotal();
+    const contents   = getCartContents();
 
-  // Calculate the total value of the purchase
-  let totalValue = 0;
-  for (const name in cart) {
-    totalValue += cart[name].price * cart[name].quantity;
-  }
+    // Collect optional PII from checkout form (hashed before sending)
+    const userExtras = {};
+    const emailEl = document.getElementById('email');
+    const phoneEl = document.getElementById('phone');
+    if (emailEl && emailEl.value) userExtras.email = emailEl.value;
+    if (phoneEl && phoneEl.value) userExtras.phone = phoneEl.value;
 
-  // Track the Purchase event with required parameters
-  fbq('track', 'Purchase', {
-    value: totalValue,
-    currency: 'USD'
-  });
+    // Fire Purchase via CAPI + browser pixel (deduplicated)
+    if (typeof capiTrackPurchase === 'function') {
+        capiTrackPurchase(totalValue, contents, userExtras);
+    }
 
-  // Redirect to the purchase confirmation page
-  window.location.href = 'purchase-confirmation.html';
+    // Clear the cart
+    cart = {};
+    saveCartToLocalStorage();
+    updateCartCount();
+
+    // Redirect to the purchase confirmation page
+    window.location.href = 'purchase-confirmation.html';
 }
 
 // Add event listener to the purchase button
