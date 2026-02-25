@@ -32,37 +32,7 @@ function generateEventId() {
   return 'evt_' + Date.now() + '_' + Math.random().toString(36).slice(2, 10);
 }
 
-/**
- * SHA-256 hash a plain-text string (for PII normalisation).
- * Returns a hex string, or null if the input is empty.
- */
-async function sha256(value) {
-  if (!value) return null;
-  const normalised = value.trim().toLowerCase();
-  const buffer = await crypto.subtle.digest(
-    'SHA-256',
-    new TextEncoder().encode(normalised)
-  );
-  return Array.from(new Uint8Array(buffer))
-    .map(b => b.toString(16).padStart(2, '0'))
-    .join('');
-}
 
-/**
- * Read the _fbp cookie set by the Meta Pixel (if present).
- */
-function getFbp() {
-  const match = document.cookie.match(/(?:^|;\s*)_fbp=([^;]+)/);
-  return match ? match[1] : null;
-}
-
-/**
- * Read the _fbc cookie (set when a visitor arrives via a Facebook ad).
- */
-function getFbc() {
-  const match = document.cookie.match(/(?:^|;\s*)_fbc=([^;]+)/);
-  return match ? match[1] : null;
-}
 
 /**
  * Build the user_data object, hashing any PII fields.
@@ -71,24 +41,25 @@ function getFbc() {
 async function buildUserData(extras) {
   const userData = {};
 
-  const fbp = getFbp();
+  const fbp = clientParamBuilder.getFbp();
   if (fbp) userData.fbp = fbp;
 
-  const fbc = getFbc();
+  const fbc = clientParamBuilder.getFbc();
   if (fbc) userData.fbc = fbc;
 
   if (extras && extras.email) {
-    const hashed = await sha256(extras.email);
+    const hashed = await clientParamBuilder.getNormalizedAndHashedPII(extras.email, 'email');
     if (hashed) userData.em = [hashed];
   }
 
   if (extras && extras.phone) {
-    const hashed = await sha256(extras.phone);
+    const hashed = await clientParamBuilder.getNormalizedAndHashedPII(extras.phone, 'phone');
     if (hashed) userData.ph = [hashed];
   }
 
-  // Client IP and user-agent are sent by Meta's servers when using
-  // server-side CAPI; from the browser we omit them (unavailable).
+  const clientIpAddress = clientParamBuilder.getClientIpAddress();
+  if (clientIpAddress) userData.client_ip_address = clientIpAddress;
+
   userData.client_user_agent = navigator.userAgent;
 
   return userData;
